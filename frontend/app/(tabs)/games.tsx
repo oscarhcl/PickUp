@@ -12,3 +12,4 @@ const Games = () => {
 export default Games
 
 const styles = StyleSheet.create({})
+

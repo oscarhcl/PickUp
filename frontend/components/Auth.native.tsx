@@ -1,11 +1,12 @@
 import { Platform } from 'react-native'
 import * as AppleAuthentication from 'expo-apple-authentication'
 import React from 'react'
-// import { supabase } from 'app/utils/supabase'
 
 import 'react-native-url-polyfill/auto'
 import { createClient } from '@supabase/supabase-js'
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import {router} from 'expo-router'
 
 export const supabase = createClient(
   "https://nddyokboixdpybuvswaw.supabase.co", 
@@ -25,7 +26,7 @@ export function Auth() {
         buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
         buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
         cornerRadius={5}
-        style={{ width: 200, height: 64 }}
+        style={{ width: 320, height: 60 }}
         onPress={async () => {
           try {
             const credential = await AppleAuthentication.signInAsync({
@@ -46,7 +47,10 @@ export function Auth() {
               })
               console.log(JSON.stringify({ error, user }, null, 2))
               if (!error) {
-                // User is signed in.
+                // User is signed in
+                console.log("user is logged in")
+                router.replace("/courts")
+
               }
             } else {
               throw new Error('No identityToken.')
@@ -54,6 +58,7 @@ export function Auth() {
           } catch (e) {
             if ((e as any).code === 'ERR_REQUEST_CANCELED') {
               // handle that the user canceled the sign-in flow
+              console.log("login cancelled")
             } else {
               // handle other errors
             }

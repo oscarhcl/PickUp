@@ -14,7 +14,7 @@ export default function SignIn() {
   return (
     <View style={styles.container}>
       <View style={styles.textContainer}>
-        <Text style={styles.text}>PickUp:{"\n"}Making hooping easy{"\n"}for you.</Text>
+        <Text style={styles.text}>PickUp:{"\n"}Making hooping on campus easy for you.</Text>
       </View>
       <Auth />
       {/* <Button title="Go to courts" onPress={handleSignIn} /> */}
