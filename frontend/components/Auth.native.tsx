@@ -1,22 +1,16 @@
-import { Platform } from 'react-native'
-import * as AppleAuthentication from 'expo-apple-authentication'
-import React from 'react'
+import { Platform, AppState } from 'react-native';
+import { router } from 'expo-router';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import React from 'react';
+import 'react-native-url-polyfill/auto';
+import { supabase } from '../libs/supabaseClient';
 
-import 'react-native-url-polyfill/auto'
-import { createClient } from '@supabase/supabase-js'
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
-import {router} from 'expo-router'
-
-export const supabase = createClient(
-  "https://nddyokboixdpybuvswaw.supabase.co", 
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5kZHlva2JvaXhkcHlidXZzd2F3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzczMzQ0NDUsImV4cCI6MjA1MjkxMDQ0NX0.B-yX-xQMWuBAqFMR0hqu7BMQkqQEIIJutBnEl3-Mi2E", {
-  auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
+AppState.addEventListener('change', (state) => {
+  if (state === 'active') {
+    supabase.auth.startAutoRefresh();
+  } else {
+    supabase.auth.stopAutoRefresh();
+  }
 });
 
 export function Auth() {
@@ -34,37 +28,59 @@ export function Auth() {
                 AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
                 AppleAuthentication.AppleAuthenticationScope.EMAIL,
               ],
-            })
+            });
             console.log(credential);
-            // Sign in via Supabase Auth.
+
             if (credential.identityToken) {
-              const {
-                error,
-                data: { user },
-              } = await supabase.auth.signInWithIdToken({
+              // Use signInWithIdToken for Apple login
+              const { error, data: { user } } = await supabase.auth.signInWithIdToken({
                 provider: 'apple',
                 token: credential.identityToken,
-              })
-              console.log(JSON.stringify({ error, user }, null, 2))
-              if (!error) {
-                // User is signed in
-                console.log("user is logged in")
-                router.replace("/courts")
+              });
 
+              if (error) {
+                console.error("Error during Apple sign-in:", error);
+              } else if (user){
+                // // Insert into your custom users table if necessary
+                // console.log(JSON.stringify({ error, user }, null, 2))
+                // const { error: insertError } = await supabase
+                //   .from('profiles') // Replace 'users' with your actual table name
+                //   .insert([
+                //     {
+                //       email: user.email,
+                //       id: user.id, // You can store the Apple ID or any other relevant data
+                //       updated_at: new Date(),
+                //     },
+                //   ]);
+
+                // if (insertError) {
+                //   console.error('Error inserting user:', insertError);
+                // } else {
+                //   console.log('User inserted successfully into the table');
+                // }
+                // //console.log(JSON.stringify({ error, user }, null, 2))
+                router.replace({
+                  pathname: '/create-profile',
+                  params: {
+                    id: user.id, 
+                    email: user.email,
+                    updated_at: new Date().toISOString(),
+                  },
+                });
               }
             } else {
-              throw new Error('No identityToken.')
+              throw new Error('No identityToken.');
             }
           } catch (e) {
             if ((e as any).code === 'ERR_REQUEST_CANCELED') {
-              // handle that the user canceled the sign-in flow
-              console.log("login cancelled")
+              console.log('Login cancelled');
             } else {
-              // handle other errors
+              console.error('Error during authentication:', e);
             }
           }
         }}
       />
-    )
-  return <>{/* Implement Android Auth options. */}</>
+    );
+
+  return <>{/* Implement Android Auth options. */}</>;
 }
