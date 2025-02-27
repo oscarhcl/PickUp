@@ -4,6 +4,9 @@ import React, { useState } from 'react';
 import { supabase } from '../../libs/supabaseClient';
 import { useSearchParams } from 'expo-router/build/hooks';
 
+import { useGlobalContext } from '../../context/GlobalProvider';
+import { getCurrentUser } from '../../libs/supabaseClient';
+
 type FormFieldProps = {
     value: string;
     placeholder: string;
@@ -34,6 +37,8 @@ const createprofile = () => {
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
 
+  const { setUser, setIsLogged, setIsLoggedIn ,login} = useGlobalContext();
+
   const handleSubmit = async () => {
         console.log( firstName + lastName + username)
         const { error: insertError } = await supabase
@@ -52,10 +57,10 @@ const createprofile = () => {
         if (insertError) {
             console.error('Error inserting user:', insertError);
         } else {
-            console.log('User profileinserted successfully into the table');
+            console.log('User profile inserted successfully into the table');
+            await login();
+            router.replace('/courts');
         }
-        //console.log(JSON.stringify({ error, user }, null, 2))
-        router.replace('/courts');
   };
 
   return (

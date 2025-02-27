@@ -13,3 +13,40 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: false,
   },
 });
+
+export async function getAccount() {
+  const { data: user, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) throw authError || new Error("User not found");
+  return user;
+}
+
+export async function getCurrentUser() {
+  try {
+    const userUser = await getAccount();
+    const user = userUser.user // Call the JS function to get the user
+    // Fetch the user's profile from the 'profiles' table
+    const { data: userProfile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError) throw profileError;
+
+    return {userProfile }; //return profile
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    return null;
+  }
+}
+
+export async function fetchProfile() {
+  try {
+    const data = await getCurrentUser();  // Call the JS function to get the profile
+    console.log(data);
+    return data;
+  } catch (error) {
+    console.log("Error loading user");
+    return null;
+  }
+}
