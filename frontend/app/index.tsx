@@ -1,25 +1,25 @@
-import { StyleSheet, View } from 'react-native';
-import React from 'react';
-import { registerRootComponent } from 'expo';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import SignInScreen from './(auth)/signin'; // Assuming SignInScreen is your sign-in component
+import {Text, View } from 'react-native';
 import { Redirect } from 'expo-router';
-import Courts from './(tabs)/courts' 
-const Stack = createStackNavigator();
+import {StatusBar} from 'expo-status-bar'
+import React from 'react';
+import { useGlobalContext } from '../context/GlobalProvider';
 
 export default function App() {
+  const {user, isLoading, isLoggedIn} = useGlobalContext();
+
+  if (isLoading) {
+    console.log("PickUp app is loading...");
+    return (
+      <View>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  console.log("isLoggedIn= " + isLoggedIn);
+  if (isLoggedIn && user != null) return <Redirect href='/courts'/>;
+
   return (
     <Redirect href="/signin"/>
   );
 };
-
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

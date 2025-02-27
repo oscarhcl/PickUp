@@ -3,7 +3,9 @@ import { router } from 'expo-router';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import React from 'react';
 import 'react-native-url-polyfill/auto';
-import { supabase } from '../libs/supabaseClient';
+
+import { supabase, getCurrentUser } from '../libs/supabaseClient';
+import { useGlobalContext } from "../context/GlobalProvider";
 
 AppState.addEventListener('change', (state) => {
   if (state === 'active') {
@@ -14,6 +16,7 @@ AppState.addEventListener('change', (state) => {
 });
 
 export function Auth() {
+  const { login } = useGlobalContext();
   if (Platform.OS === 'ios')
     return (
       <AppleAuthentication.AppleAuthenticationButton
@@ -41,32 +44,29 @@ export function Auth() {
               if (error) {
                 console.error("Error during Apple sign-in:", error);
               } else if (user){
-                // // Insert into your custom users table if necessary
-                // console.log(JSON.stringify({ error, user }, null, 2))
-                // const { error: insertError } = await supabase
-                //   .from('profiles') // Replace 'users' with your actual table name
-                //   .insert([
-                //     {
-                //       email: user.email,
-                //       id: user.id, // You can store the Apple ID or any other relevant data
-                //       updated_at: new Date(),
-                //     },
-                //   ]);
-
-                // if (insertError) {
-                //   console.error('Error inserting user:', insertError);
-                // } else {
-                //   console.log('User inserted successfully into the table');
-                // }
-                // //console.log(JSON.stringify({ error, user }, null, 2))
-                router.replace({
-                  pathname: '/create-profile',
-                  params: {
-                    id: user.id, 
-                    email: user.email,
-                    updated_at: new Date().toISOString(),
-                  },
-                });
+                //get user data from profile data
+                const authFlow = async () => {
+                  const data = await getCurrentUser(); // Call the JS function to get the profile
+                
+                  if (data) {
+                    console.log(data);
+                    login();
+                    router.replace('/courts');
+                  } else {
+                    console.log("No user exists / error loading user");
+                    router.replace({
+                      pathname: '/create-profile',
+                      params: {
+                        id: user?.id, 
+                        email: user?.email,
+                        updated_at: new Date().toISOString(),
+                      },
+                    });
+                  }
+                };
+                
+                // Call the function
+                authFlow();
               }
             } else {
               throw new Error('No identityToken.');

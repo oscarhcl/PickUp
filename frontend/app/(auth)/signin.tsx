@@ -1,23 +1,26 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button } from 'react-native';
-import { Link,router } from 'expo-router';
+import { Link, router } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
+import React, { useEffect } from 'react';
 import { Auth } from "../../components/Auth";
+import { useGlobalContext } from '../../context/GlobalProvider';
+import { fetchProfile } from '../../libs/supabaseClient';
 
 export default function SignIn() {
-  // const navigation = useNavigation();
+  const { logout, isLoggedIn } = useGlobalContext();
 
-  // // Handle navigation to the Home screen after sign-in (for now, just navigate on button press)
-  // const handleSignIn = () => {
-  //   navigation.replace('courts')  // Navigate to Home screen
-  // };
+  useEffect(() => {
+    console.log("isLoggedIn= " + isLoggedIn);
+    fetchProfile();
+  }, [isLoggedIn]);
+
   return (
     <View style={styles.container}>
       <View style={styles.textContainer}>
         <Text style={styles.text}>PickUp:{"\n"}Making hooping on campus easy for you.</Text>
       </View>
       <Auth />
-      {/* <Button title="Go to courts" onPress={handleSignIn} /> */}
       <StatusBar style="auto" />
     </View>
   );
